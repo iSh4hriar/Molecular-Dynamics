@@ -1,0 +1,64 @@
+ধাপ ১: একটি নতুন এবং পরিষ্কার ফোল্ডার তৈরি করুন: 
+প্রথমে টার্মিনালে এই কমান্ডটি দিয়ে হোম ডিরেক্টরিতে একটি সম্পূর্ণ নতুন ফোল্ডার তৈরি করুন এবং সেটির ভেতরে ঢুকুন:
+
+mkdir ~/lammps_run
+cd ~/lammps_run
+
+ধাপ ২: ইনপুট স্ক্রিপ্ট ফাইলটি তৈরি করুন
+এবার এই ফোল্ডারের ভেতর আপনার ল্যাম্পস কোডটি সেভ করার জন্য টার্মিনালে লিখুন:
+
+nano in.test_CuFeMnTi
+
+একটি খালি এডিটর উইন্ডো ওপেন হবে। সেখানে আপনার সংশোধিত পুরো কোডটি পেস্ট করে দিন:
+
+units metal
+dimension 3
+boundary p p p
+atom_style atomic
+
+# --- Structure ---
+lattice fcc 3.6
+region box block 0 5 0 5 0 5
+create_box 4 box
+create_atoms 1 box
+
+# --- Random ভাবে ৪টা element ভাগ করা ---
+set type 1 type/fraction 2 0.25 12345
+set type 1 type/fraction 3 0.33 54321
+set type 1 type/fraction 4 0.50 98765
+
+# --- Mass ---
+mass 1 63.546     # Cu
+mass 2 55.845     # Fe
+mass 3 54.938     # Mn
+mass 4 47.867     # Ti
+
+# --- Potential ---
+pair_style meam
+pair_coeff * * library.meam Fe Mn Ni Ti Cu Cr Co Al FeMnNiTiCuCrCoAl.meam Cu Fe Mn Ti
+
+# --- Output setting ---
+thermo 10
+thermo_style custom step pe ke etotal press vol lx
+
+# --- প্রথমে energy minimization ---
+min_style cg
+minimize 1.0e-6 1.0e-8 5000 10000
+
+# --- Minimized structure সেভ করা ---
+write_data after_min.data
+dump 1 all custom 1 dump.min.lammpstrj id type x y z
+run 0
+
+পেস্ট করা হলে কিবোর্ডের Ctrl + O দিয়ে এন্টার চাপুন (সেভ করার জন্য), তারপর Ctrl + X চেপে এডিটর থেকে বের হয়ে আসুন।
+
+ধাপ ৩: প্রয়োজনীয় সব ফাইল এই ফোল্ডারে নিয়ে আসুন
+এখন আমাদের এই ~/lammps_run ফোল্ডারের ভেতর ৩টি ফাইল কপি করে এনে রাখতে হবে— সাকসেসফুলি বিল্ড হওয়া ল্যাম্পস এক্সিকিউটেবল ফাইলটি (lmp-gear icon), এবং ডাউনলোড করা পোটেনশিয়াল ফাইল দুটি।
+in.test_CuFeMnTi, library.meam, FeMnNiTiCuCrCoAl.meam, lmp এই চারটা ফাইল থাকবে। 
+
+ধাপ ৪: সিমুলেশনটি রান দিন
+সব ফাইল যেহেতু এখন একই ফোল্ডারে আছে এবং এটি আমাদের নতুন বিল্ড করা lmp, তাই গ্লোবাল কোনো এরর এড়াতে আমরা সামনে ./ ব্যবহার করে রান করব:
+
+./lmp -in in.test_CuFeMnTi -log log.test
+
+
