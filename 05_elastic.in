@@ -1,4 +1,4 @@
-# চালাও: lmp -var comp Al10 -var elems "Ni Al Cu Co" -in 05_elastic.in
+# lmp -var comp Al10 -var elems "Ni Al Cu Co" -in 05_elastic.in
 
 units           metal
 boundary        p p p
