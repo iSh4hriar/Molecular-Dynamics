@@ -1,0 +1,59 @@
+# চালাও: lmp -var comp Al10 -var elems "Ni Al Cu Co" -in 05_elastic.in
+
+units           metal
+boundary        p p p
+atom_style      atomic
+timestep        0.002
+
+variable        up equal 1.0e-6
+
+read_data       ../equil/${comp}_equilibrated.data
+pair_style      eam/alloy
+pair_coeff      * * ../potentials/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy ${elems}
+neighbor        2.0 bin
+neigh_modify    delay 0 every 1 check yes
+
+min_style       cg
+fix             relaxbox all box/relax iso 0.0 vmax 0.001
+minimize        1.0e-12 1.0e-14 10000 100000
+unfix           relaxbox
+
+print           "REF ${comp} pxx=$(pxx) pyy=$(pyy) pzz=$(pzz) pyz=$(pyz) pxz=$(pxz) pxy=$(pxy)" &
+                file ../logs/${comp}_cij_raw.dat screen no
+
+write_restart   ../logs/${comp}_restart.equil
+
+label loopdir
+variable dir loop 6
+
+if "${dir} == 1" then "variable dlabel string xx" "variable dbox string x"
+if "${dir} == 2" then "variable dlabel string yy" "variable dbox string y"
+if "${dir} == 3" then "variable dlabel string zz" "variable dbox string z"
+if "${dir} == 4" then "variable dlabel string yz" "variable dbox string yz"
+if "${dir} == 5" then "variable dlabel string xz" "variable dbox string xz"
+if "${dir} == 6" then "variable dlabel string xy" "variable dbox string xy"
+
+clear
+read_restart    ../logs/${comp}_restart.equil
+pair_style      eam/alloy
+pair_coeff      * * ../potentials/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy ${elems}
+neighbor        2.0 bin
+neigh_modify    delay 0 every 1 check yes
+
+if "${dir} <= 3" then &
+   "change_box all ${dbox} delta 0 $(lx*v_up) remap units box" &
+elif "${dir} == 4" &
+   "change_box all yz delta $(ly*v_up) remap units box" &
+elif "${dir} == 5" &
+   "change_box all xz delta $(lx*v_up) remap units box" &
+elif "${dir} == 6" &
+   "change_box all xy delta $(lx*v_up) remap units box"
+
+min_style       cg
+minimize        1.0e-12 1.0e-14 10000 100000
+
+print           "CIJ_ROW ${comp} dir=${dlabel} pxx=$(pxx) pyy=$(pyy) pzz=$(pzz) pyz=$(pyz) pxz=$(pxz) pxy=$(pxy)" &
+                append ../logs/${comp}_cij_raw.dat screen no
+
+next dir
+jump SELF loopdir
