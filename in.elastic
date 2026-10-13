@@ -1,4 +1,4 @@
-# চালাও: lmp -var comp Al10 -var elems "Ni Al Cu Co" -in in.elastic -log ../logs/Al10_elastic_full.log
+# : lmp -var comp Al10 -var elems "Ni Al Cu Co" -in in.elastic -log ../logs/Al10_elastic_full.log
 
 include init.mod
 include potential.mod
