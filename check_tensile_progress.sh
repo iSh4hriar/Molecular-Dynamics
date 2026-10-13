@@ -13,9 +13,9 @@ for ID in $IDS; do
             PCT=$(awk "BEGIN{printf \"%.1f\", $LAST_STEP/$TOTAL_STEPS*100}")
             echo "$ID : step $LAST_STEP / $TOTAL_STEPS ($PCT%)"
         else
-            echo "$ID : শুরু হয়েছে, thermo data এখনো নেই"
+            echo "$ID : "
         fi
     else
-        echo "$ID : এখনো শুরু হয়নি"
+        echo "$ID : "
     fi
 done
