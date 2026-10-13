@@ -25,14 +25,13 @@ for ID in "${!COMPS[@]}"; do
     TOTAL=$((N_CU + N_NI + N_AL + N_CO))
     echo ">>> Building $ID  (Cu=$N_CU Ni=$N_NI Al=$N_AL Co=$N_CO  Total=$TOTAL)"
 
-    # সব কিছু একটামাত্র atomsk কমান্ডে, ইন্টারমিডিয়েট ফাইল write/read ছাড়াই
     atomsk --create fcc $A0 Cu -duplicate $NX $NY $NZ \
         -select random $N_NI Cu -substitute Cu Ni \
         -select random $N_AL Cu -substitute Cu Al \
         -select random $N_CO Cu -substitute Cu Co \
         -ow ${ID}.lmp
 
-    echo "    -> ${ID}.lmp তৈরি হয়েছে, atom count verify করছি..."
+    echo "    -> ${ID}.lmp"
     {
         echo "== $ID =="
         echo "-- Masses (type -> element) --"
@@ -47,5 +46,5 @@ for ID in "${!COMPS[@]}"; do
     echo
 done
 
-echo "সব structure structures/ ফোল্ডারে জেনারেট হয়ে গেছে।"
+echo "done"
 
